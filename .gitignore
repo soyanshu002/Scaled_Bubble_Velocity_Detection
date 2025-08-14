@@ -8,6 +8,7 @@ venv/
 .env
 .myenv
 myenv/
+tempvenv/
 
 # Configuration files
 config.yaml
@@ -21,8 +22,8 @@ config.yaml
 Thumbs.db
 
 # Output folders
-data/output/
-data/processed/
+
+
 *.avi
 *.mp4
 *.mov
@@ -30,8 +31,11 @@ data/processed/
 
 # Raw data (if too large or sensitive)
 data/raw/
+data/processed/
+data/processed  
 
 # Notebooks checkpoints
+notebooks/
 .ipynb_checkpoints
 
 # SQLite or local DB dumps (if used)

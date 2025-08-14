@@ -1,0 +1,28 @@
+# Core image processing
+opencv-python==4.9.0.80
+numpy==1.26.4
+Pillow==10.3.0
+
+# Data handling and visualization
+pandas==2.2.2
+matplotlib==3.8.4
+
+# Scikit-image and SciPy for morphology and measurement
+scikit-image==0.23.2
+scipy==1.13.1
+
+# Database
+sqlalchemy
+psycopg2-binary
+
+# Configs and env handling
+pyyaml==6.0.1
+python-dotenv==1.0.1
+
+# Progress bars and logging
+tqdm==4.66.4
+loguru==0.7.2
+
+# Optional: if you want fast video processing or image sequence handling
+imageio==2.34.0
+imageio-ffmpeg==0.4.9
