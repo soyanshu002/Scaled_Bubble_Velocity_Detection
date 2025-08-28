@@ -31,11 +31,11 @@ def classify_bubbles(circles):
     small_bubbles, medium_bubbles, large_bubbles = [], [], []
     for circle in circles:
         radius = circle[2]
-        if radius < 6:
+        if radius < 3 :
             small_bubbles.append(circle)
-        elif radius < 8:
+        elif radius < 5:
             medium_bubbles.append(circle)
-        elif radius < 10:
+        elif radius < 7:
             large_bubbles.append(circle)
     return small_bubbles, medium_bubbles, large_bubbles
 

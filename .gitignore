@@ -35,8 +35,8 @@ data/processed/
 data/processed  
 
 # Notebooks checkpoints
-notebooks/
-.ipynb_checkpoints
+#notebooks/
+#.ipynb_checkpoints
 
 # SQLite or local DB dumps (if used)
 *.sqlite

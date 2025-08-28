@@ -26,20 +26,48 @@ def classify_bubbles(circles):
     small, medium, large = [], [], []
     for c in circles:
         r = c[2]
-        if r < 6:
+        if r < 3:
             small.append(c)
-        elif r < 8:
+        elif r < 5:
             medium.append(c)
-        elif r < 10:
+        elif r < 7:
             large.append(c)
     return small, medium, large
 
 def calculate_centroids(circles):
     return [(int(c[0]), int(c[1])) for c in circles]
 
-def calculate_velocity(centroids, prev_centroids, fps, px_per_mm):
+def match_bubbles(curr_centroids, prev_centroids, max_distance=15):
+    """
+    Match bubbles between frames using nearest-neighbor matching.
+    Returns: list of (curr, prev) centroid pairs
+    """
+    matches = []
+    used_prev = set()
+    
+    for curr in curr_centroids:
+        cx, cy = curr
+        best_match = None
+        best_dist = float("inf")
+        
+        for j, prev in enumerate(prev_centroids):
+            if j in used_prev:
+                continue
+            px, py = prev
+            dist = np.sqrt((cx - px)**2 + (cy - py)**2)
+            if dist < best_dist and dist <= max_distance:
+                best_dist = dist
+                best_match = j
+        
+        if best_match is not None:
+            matches.append((curr, prev_centroids[best_match]))
+            used_prev.add(best_match)
+    
+    return matches
+
+def calculate_velocity(matched_pairs, fps, px_per_mm):
     velocities = []
-    for (x1, y1), (x2, y2) in zip(centroids, prev_centroids):
+    for (x1, y1), (x2, y2) in matched_pairs:
         distance_px = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)  # pixels
         distance_mm = distance_px / px_per_mm                # mm
         distance_m = distance_mm / 1000                      # m
@@ -57,10 +85,10 @@ def calculate_avg_velocities_from_folder(folder_path, fps, px_per_mm):
     if not os.path.isdir(folder_path):
         raise FileNotFoundError(f"[ERROR] Folder not found: {folder_path}")
     
-    frame_files = sorted([
-        f for f in os.listdir(folder_path)
-        if f.lower().endswith((".png", ".jpg", ".jpeg"))
-    ])
+    frame_files = sorted(
+        [f for f in os.listdir(folder_path) if f.lower().endswith((".png", ".jpg", ".jpeg"))],
+        key=lambda x: int(''.join(filter(str.isdigit, x)) or -1)  # numeric sort
+    )
     
     prev_small, prev_medium, prev_large = [], [], []
     
@@ -81,9 +109,13 @@ def calculate_avg_velocities_from_folder(folder_path, fps, px_per_mm):
         cent_large = calculate_centroids(large)
         
         if prev_small:
-            small_vels = calculate_velocity(cent_small, prev_small, fps, px_per_mm)
-            medium_vels = calculate_velocity(cent_medium, prev_medium, fps, px_per_mm)
-            large_vels = calculate_velocity(cent_large, prev_large, fps, px_per_mm)
+            small_matches = match_bubbles(cent_small, prev_small)
+            medium_matches = match_bubbles(cent_medium, prev_medium)
+            large_matches = match_bubbles(cent_large, prev_large)
+
+            small_vels = calculate_velocity(small_matches, fps, px_per_mm)
+            medium_vels = calculate_velocity(medium_matches, fps, px_per_mm)
+            large_vels = calculate_velocity(large_matches, fps, px_per_mm)
             
             total_small_vel += average_velocity(small_vels)
             total_medium_vel += average_velocity(medium_vels)
@@ -97,7 +129,6 @@ def calculate_avg_velocities_from_folder(folder_path, fps, px_per_mm):
     avg_large = total_large_vel / frame_count if frame_count else 0
 
     return avg_small, avg_medium, avg_large
-
 # =========================
 # Database Update
 # =========================
